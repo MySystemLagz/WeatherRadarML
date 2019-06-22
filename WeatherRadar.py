@@ -1,5 +1,5 @@
-# Use Fiona, geopandas, or shape to read .shp files, but first get it working
 # Use point.within(shape) or shape.contains(point) to check if a point is within a shape
+# .shp and .shx files rely on each other, keep them in the same directory at all times
 
 from shapely.geometry import Polygon, Point, shape
 import fiona
