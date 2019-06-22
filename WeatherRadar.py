@@ -9,20 +9,33 @@ stations = [['KDWH', (30.062, -95.553)], ['KIAH', (29.985, -95.342)], ['KTME', (
 
 # Extract information from shapefile here
 collection = fiona.open("wwa_201801010000_201812312359.shp")
-record = next(collection)
-coords = record['geometry']['coordinates'][0]
-# Convert to shapely geometry
-poly = Polygon(coords)
 
-# Loop through the weather stations and check if any of them are in bounds of "poly"
-# Update "poly" to the actual bounds of the flash flood weather reports
-# Later upgrade to 2D loop to also loop through "poly"
+# Loop through the weather stations and check if any of them are in bounds of the polygon
 counter = 0
-while counter < len(stations):
-    location = Point(stations[counter][1])
-    station = stations[counter][0]
-    if location.within(poly):
-        print(station, '- In bounds')
+station_counter = 0
+in_bound = False
+while counter < 4107:
+    record = next(collection)
+    coords = record['geometry']['coordinates'][0]
+    if len(coords) >= 3:
+        try:
+            poly = Polygon(coords)
+        except AssertionError:
+            counter += 1
+            continue
     else:
-        print(station, '- Outta bounds')
+        counter += 1
+        continue
+
+    while station_counter < len(stations):
+        location = Point(stations[station_counter][1])
+        station = stations[station_counter][0]
+        if location.within(poly):
+            print(station, '- In bounds')
+            in_bound = True
+        station_counter += 1
+        if station_counter == len(stations) and in_bound == True:
+            print('-------------------')
     counter += 1
+    station_counter = 0
+    in_bound = False
