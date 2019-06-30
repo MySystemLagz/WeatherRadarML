@@ -77,7 +77,7 @@ class ASOSInfo( object ):
             None. Sets _keys and _colWid attributes
         """
         self._colWid = [len(x) for x in headSep.split()];                               # Split the headSep line on space, iterate over each element of the list returned from .split() and get length
-        self._keys   = self.lineParser( header )
+        self._keys   = self._lineParser( header )
     
     ###########################################################################
     def _lineParser( self, line ):
@@ -110,8 +110,7 @@ class ASOSInfo( object ):
 
             data.append( info );                                                    # Append info the string to the data list
             offset += self._colWid[i]+1;                                            # Increment the counter by colWidth[i]+1, the +1 is to account for the space between columns
-        data = dict( zip(self._keys, data) );                                       # Zip up the _keys and data lists and convert to dictionary
-        return data                                                                 # Return the data dictionary from function
+        return data                                                                 # Return the data list from function
     
     ###########################################################################
     def _parseData(self):
@@ -133,7 +132,8 @@ class ASOSInfo( object ):
             self._headParser( header, headSep );                                    # Parse the header line; this will set the _colWid and _keys attributes
             data    = [];                                                           # Initialize list to store all data 
             for line in fid.readlines():                                            # Iterate over all lines in the file
-                info = self._lineParser( line );                                    # Parse the line, returning a dictionary of information
+                info = self._lineParser( line );                                    # Parse the line, returning a list of information
+                info = dict( zip(self._keys, info) );                               # Zip up the _keys and info lists and convert to dictionary
                 data.append( info );                                                # Append the dictionary to the data list
         return data                                                                 # Return the data list
 
