@@ -9,7 +9,19 @@ stations = [['KDWH', (-95.553, 30.062)], ['KIAH', (-95.342, 29.985)], ['KTME', (
 
 # Open the shapefile
 def WeatherRadar( shapeFile ): 
-    counter = -1
+    """
+    Name:
+        WeatherRadar
+    Purpose:
+        A function to determine if weather stations are within a flash flood
+        warning.
+    Inputs:
+        shapeFile : Path to shape file to read in flash flood warnings from
+    Keywords:
+        None.
+    Outputs:
+        Prints information about stations that are within a warning
+    """
     collection = fiona.open( shapeFile )
 
     # Loop through the weather reports and check if any weather station is in bounds of it
@@ -19,8 +31,6 @@ def WeatherRadar( shapeFile ):
             record = next(collection)
         except:
             break;
-        else:
-            counter += 1
 
         coords = record['geometry']['coordinates'][0]
         # Check if it's even possible to convert the coordinates into a polygon
@@ -37,7 +47,7 @@ def WeatherRadar( shapeFile ):
             station = stations[station_counter][0]
             if location.within(poly):
                 if in_bound is False:
-                    print('Index:', counter)
+                    print('Index:', record['id'])
                 print(station, '- In bounds')
                 in_bound = True
             if station_counter == len(stations) - 1 and in_bound is True:
