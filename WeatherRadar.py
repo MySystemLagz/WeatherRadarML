@@ -30,7 +30,7 @@ def WeatherRadar( shapeFile ):
         try:
             record = next(collection)
         except:
-            break;
+            break
 
         coords = record['geometry']['coordinates'][0]
         # Check if it's even possible to convert the coordinates into a polygon
