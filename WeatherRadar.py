@@ -1,6 +1,7 @@
 # Use point.within(shape) or shape.contains(point) to check if a point is within a shape
 # .shp and .shx files rely on each other, keep them in the same directory at all times
 import sys
+from datetime import datetime
 from shapely.geometry import Polygon, Point, shape
 import fiona
 
@@ -51,6 +52,11 @@ def WeatherRadar( shapeFile ):
             if location.within(poly):
                 if in_bound is False:
                     print('Index:', record['id'])
+                    # print(record)
+                    issued = datetime.strptime(record['properties']['ISSUED'], '%Y%m%d%H%M')
+                    print('Issued:', issued)
+                    expired = datetime.strptime(record['properties']['EXPIRED'], '%Y%m%d%H%M')
+                    print('Expired:', expired)
                 print(station, '- In bounds')
                 in_bound = True
             if station_counter == len(stations) - 1 and in_bound is True:
