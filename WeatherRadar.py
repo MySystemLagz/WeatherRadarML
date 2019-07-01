@@ -7,6 +7,9 @@ import fiona
 # A list of weather stations, name and location, represented as points
 stations = [['KDWH', (-95.553, 30.062)], ['KIAH', (-95.342, 29.985)], ['KTME', (-95.8978889, 29.8050278)], ['KHOU', (-95.279, 29.646)], ['KSGR', (-95.657, 29.622)], ['KLVJ', (-95.242, 29.521)], ['KAXH', (-95.4769167, 29.5061389)]]
 
+# A crude polygon that encloses the Houston area
+houston = Polygon([(-95.768323, 29.702655), (-95.586544, 30.006315), (-95.167337, 30.110412), (-95.070048, 29.792814), (-95.076884, 29.553123), (-95.774778, 29.704843)])
+
 # Open the shapefile
 def WeatherRadar( shapeFile ): 
     """

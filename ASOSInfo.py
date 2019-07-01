@@ -16,7 +16,7 @@ class ASOSInfo( object ):
     def countries(self):
         """
         Name:
-            countries:
+            countries
         Purpose:
             A method to return a list of all countries from the file
         Inputs:
@@ -26,7 +26,7 @@ class ASOSInfo( object ):
         Returns:
             List of strings
         """
-        return sorted( list( set( [d['COUNTRY'] for d in self.data] ) ) );          # Iterate over all dictionaries in the data list and get the COUNTRY, then get all unique countires using the set() function, convert that to a list using list() function, then sort values using sorted()
+        return sorted( list( set( [d['COUNTRY'] for d in self.data] ) ) )          # Iterate over all dictionaries in the data list and get the COUNTRY, then get all unique countires using the set() function, convert that to a list using list() function, then sort values using sorted()
     ###########################################################################
     def states(self):
         """
@@ -41,7 +41,7 @@ class ASOSInfo( object ):
         Returns:
             List of strings
         """
-        return sorted( list( set( [d['ST'] for d in self.data] ) ) );               # Same as for countries, but using the 'ST" key for states
+        return sorted( list( set( [d['ST'] for d in self.data] ) ) )               # Same as for countries, but using the 'ST" key for states
     ###########################################################################
     def getState(self, state):
         """
@@ -56,11 +56,11 @@ class ASOSInfo( object ):
         Returns:
             List of dictionaries with infomation for each station in the state
         """
-        if len(state) != 2:                                                         # If state is NOT 2 characters 
-            print('Must use 2 character abbreviation for state');                   # Print message
-            return [];                                                              # Return empty string
-        state = state.upper();                                                      # Convert state to upper case
-        return [d for d in self.data if d['ST'] == state];                          # Iterate over all dictionaries in the data list, keeping only those where the 'ST' value matches state
+        if len(state) != 2:                                                        # If state is NOT 2 characters 
+            print('Must use 2 character abbreviation for state')                   # Print message
+            return []                                                              # Return empty string
+        state = state.upper()                                                      # Convert state to upper case
+        return [d for d in self.data if d['ST'] == state]                          # Iterate over all dictionaries in the data list, keeping only those where the 'ST' value matches state
     ###########################################################################
     def _headParser(self, header, headSep):
         """
@@ -69,14 +69,14 @@ class ASOSInfo( object ):
         Purose:
             A method to parse information from header
         Inputs:
-            header   : Header line from file; first line
-            headSep  : Separator line between header and data; second line
+            header   : Header line from file first line
+            headSep  : Separator line between header and data second line
         Keywords:
             None.
         Returns:
             None. Sets _keys and _colWid attributes
         """
-        self._colWid = [len(x) for x in headSep.split()];                               # Split the headSep line on space, iterate over each element of the list returned from .split() and get length
+        self._colWid = [len(x) for x in headSep.split()]                               # Split the headSep line on space, iterate over each element of the list returned from .split() and get length
         self._keys   = self._lineParser( header )
     
     ###########################################################################
@@ -94,23 +94,23 @@ class ASOSInfo( object ):
         Returns:
             Returns a list where each element is the data from a column
         """
-        data     = [];                                                              # Empty list that will hold data for each column
-        offset   = 0;                                                               # Offset for extracting information from the line
-        for i in range( len(self._colWid) ):                                        # Iterate over all columns; i.e,, the number of elements in the colWidth list
-            info = line[ offset:offset+self._colWid[i] ].strip();                   # Extract information from the line; start at character `offset` and end with character `offset+colWidth[i]`, .strip() removes spaces at beginning/end of string
+        data     = []                                                              # Empty list that will hold data for each column
+        offset   = 0                                                               # Offset for extracting information from the line
+        for i in range( len(self._colWid) ):                                       # Iterate over all columns i.e, the number of elements in the colWidth list
+            info = line[ offset:offset+self._colWid[i] ].strip()                   # Extract information from the line start at character `offset` and end with character `offset+colWidth[i]`, .strip() removes spaces at beginning/end of string
             if (self._keys is not None) and (self._keys[i] == 'BEGDT'):
-                info = datetime.strptime(info, '%Y%m%d');
-            elif info.isdigit():                                                    # If the string is all digits (does not include decimals
-                info = int(info);                                                   # Convert info to integer
-            else:                                                                   # Else, it is either string of float
-                try:                                                                # Try to...
-                    info = float(info);                                             # Convert info to float
-                except:                                                             # If the conversion fails; must be a string
-                    pass;                                                           # Do nothing; fail silently
+                info = datetime.strptime(info, '%Y%m%d')
+            elif info.isdigit():                                                   # If the string is all digits (does not include decimals
+                info = int(info)                                                   # Convert info to integer
+            else:                                                                  # Else, it is either string of float
+                try:                                                               # Try to...
+                    info = float(info)                                             # Convert info to float
+                except:                                                            # If the conversion fails must be a string
+                    pass                                                           # Do nothing fail silently
 
-            data.append( info );                                                    # Append info the string to the data list
-            offset += self._colWid[i]+1;                                            # Increment the counter by colWidth[i]+1, the +1 is to account for the space between columns
-        return data                                                                 # Return the data list from function
+            data.append( info )                                                    # Append info the string to the data list
+            offset += self._colWid[i]+1                                            # Increment the counter by colWidth[i]+1, the +1 is to account for the space between columns
+        return data                                                                # Return the data list from function
     
     ###########################################################################
     def _parseData(self):
@@ -126,14 +126,14 @@ class ASOSInfo( object ):
         Returns:
             List of dictionaries containing data for each station.
         """
-        with open(self._file, 'r') as fid:                                          # Open file for reading
-            header  = fid.readline();                                               # Read first line of file; this is the header
-            headSep = fid.readline();                                               # Read second line of file; this is hyphens that separates the header from the data
-            self._headParser( header, headSep );                                    # Parse the header line; this will set the _colWid and _keys attributes
-            data    = [];                                                           # Initialize list to store all data 
-            for line in fid.readlines():                                            # Iterate over all lines in the file
-                info = self._lineParser( line );                                    # Parse the line, returning a list of information
-                info = dict( zip(self._keys, info) );                               # Zip up the _keys and info lists and convert to dictionary
-                data.append( info );                                                # Append the dictionary to the data list
-        return data                                                                 # Return the data list
+        with open(self._file, 'r') as fid:                                         # Open file for reading
+            header  = fid.readline()                                               # Read first line of file this is the header
+            headSep = fid.readline()                                               # Read second line of file this is hyphens that separates the header from the data
+            self._headParser( header, headSep )                                    # Parse the header line this will set the _colWid and _keys attributes
+            data    = []                                                           # Initialize list to store all data 
+            for line in fid.readlines():                                           # Iterate over all lines in the file
+                info = self._lineParser( line )                                    # Parse the line, returning a list of information
+                info = dict( zip(self._keys, info) )                               # Zip up the _keys and info lists and convert to dictionary
+                data.append( info )                                                # Append the dictionary to the data list
+        return data                                                                # Return the data list
 
