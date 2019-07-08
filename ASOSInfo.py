@@ -1,5 +1,6 @@
 import os
 from datetime import datetime
+import requests
 
 _dir  = os.path.realpath( os.path.dirname(__file__) )
 _asos = os.path.join( _dir, 'data', 'asos-stations.txt' )
@@ -136,4 +137,90 @@ class ASOSInfo( object ):
                 info = dict( zip(self._keys, info) )                               # Zip up the _keys and info lists and convert to dictionary
                 data.append( info )                                                # Append the dictionary to the data list
         return data                                                                # Return the data list
+
+    def _get_page(self, service='https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?', stations=['AXH', 'DWH', 'EFD', 'HOU', 'IAH', 'LVJ', 'MCJ', 'SGR', 'TME'], data=['tmpc'], year1='2018', month1='1', day1='1', year2='2018', month2='12', day2='31', tz='Etc/UTC', format='onlycomma', latlon='yes', missing='M', trace='T', direct='no', report_type=['1', '2']):
+        """
+        Name: 
+            _get_page
+        Purpose:
+            Builds the page url to get data from IEM ASOS
+        Inputs:
+            service (string):
+                The base url
+            stations (list):
+                A list of 3 or 4 letter station names
+            data (string):
+                A list of data to retrieve
+            year1 (string):
+                A 4 digit number of the starting year
+            month1 (string):
+                A 1 digit number of the starting month
+            day1 (string):
+                A 1 digit number of the starting day
+            year2 (string):
+                A 4 digit number of the ending year
+            month2 (string):
+                A 1 digit number of the ending month
+            day2 (string):
+                A 1 digit number of the ending day
+            tz (string):
+                Timezone
+            format (string):
+                How the data should be formated
+            latlon (string):
+                Whether or not the latitude and longitude should be shown
+            missing (string):
+                What to represent missing data as
+            trace (string):
+                What to represent trace reports as
+            direct (string):
+                Whether or not the data should be downloaded
+            report_type (list):
+                The report types to include
+        Keywords:
+            None.
+        Returns:
+            A response that can be used to get information about the webpage
+        """
+        payload = {
+            'station': stations, 
+            'data': data, 
+            'year1': year1,
+            'month1': month1,
+            'day1': day1,
+            'year2': year2,
+            'month2': month2,
+            'day2': day2,
+            'tz': tz,
+            'format': format,
+            'latlon': latlon,
+            'missing': missing,
+            'trace': trace,
+            'direct': direct,
+            'report_type': report_type
+        }
+
+        page = requests.get(service, params=payload)
+
+        return page
+
+    def _download_data(self, page, file=os.path.join(_dir, 'data', 'scraper.txt')):
+        """
+        Name:
+            _download_data
+        Purpose:
+            Downloads the scraped data from IEM ASOS
+        Inputs:
+            page (Response):
+                The website the data will be downloaded from
+            file (string):
+                The path to the file the downloaded data will be put into
+        Keywords:
+            None
+        Returns:
+            Creates a file with the data in it
+        """
+        with open(file, 'wb') as fd:
+            for chunk in page.iter_content(chunk_size=512):
+                fd.write(chunk)
 

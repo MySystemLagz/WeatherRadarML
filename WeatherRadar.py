@@ -52,7 +52,6 @@ def WeatherRadar( shapeFile ):
             if location.within(poly):
                 if in_bound is False:
                     print('Index:', record['id'])
-                    # print(record)
                     issued = datetime.strptime(record['properties']['ISSUED'], '%Y%m%d%H%M')
                     print('Issued:', issued)
                     expired = datetime.strptime(record['properties']['EXPIRED'], '%Y%m%d%H%M')
