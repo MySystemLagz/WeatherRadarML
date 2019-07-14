@@ -1,10 +1,10 @@
 import os
 from datetime import datetime
 import requests
+import numpy as np
 
 _dir  = os.path.realpath( os.path.dirname(__file__) )
 _asos = os.path.join( _dir, 'data', 'asos-stations.txt' )
-
 
 class ASOSInfo( object ):
     def __init__(self, infile = _asos ):
@@ -62,6 +62,11 @@ class ASOSInfo( object ):
             return []                                                              # Return empty string
         state = state.upper()                                                      # Convert state to upper case
         return [d for d in self.data if d['ST'] == state]                          # Iterate over all dictionaries in the data list, keeping only those where the 'ST' value matches state
+
+    ###########################################################################
+    def stations(self):
+        return [d['CALL'] for d in self.data]
+
     ###########################################################################
     def _headParser(self, header, headSep):
         """
@@ -138,10 +143,23 @@ class ASOSInfo( object ):
                 data.append( info )                                                # Append the dictionary to the data list
         return data                                                                # Return the data list
 
-    def _get_page(self, service='https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?', stations=['AXH', 'DWH', 'EFD', 'HOU', 'IAH', 'LVJ', 'MCJ', 'SGR', 'TME'], data=['tmpc'], year1='2018', month1='1', day1='1', year2='2018', month2='12', day2='31', tz='Etc/UTC', format='onlycomma', latlon='yes', missing='M', trace='T', direct='no', report_type=['1', '2']):
+    ###########################################################################
+    def download_data(self, 
+						service     = 'https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py',
+						stations    = None, 
+						data        = 'all',
+						date1       = None,
+						date2       = datetime.utcnow(), 
+						tz          = 'Etc/UTC', 
+						format      = 'onlycomma', 
+						latlon      = 'no',
+						missing     = 'M', 
+						trace       = 0.0001, 
+						direct      = 'no',
+						report_type = ['1', '2']):
         """
         Name: 
-            _get_page
+            download_data
         Purpose:
             Builds the page url to get data from IEM ASOS
         Inputs:
@@ -182,45 +200,58 @@ class ASOSInfo( object ):
         Returns:
             A response that can be used to get information about the webpage
         """
-        payload = {
-            'station': stations, 
-            'data': data, 
-            'year1': year1,
-            'month1': month1,
-            'day1': day1,
-            'year2': year2,
-            'month2': month2,
-            'day2': day2,
-            'tz': tz,
-            'format': format,
-            'latlon': latlon,
-            'missing': missing,
-            'trace': trace,
-            'direct': direct,
-            'report_type': report_type
-        }
+        alldata = {}
+        offset  = 2
+        nVars   = len( data )
+        if (date1 is None):
+            date1 = datetime( date2.year, date2.month, date2.day )
+        if (stations is None):
+            stations = self.stations()
 
-        page = requests.get(service, params=payload)
+        n = 25
+        for ii in range(0, len(stations), n):
+            payload = {
+            	'station'		: stations[ii:ii+n] , 
+            	'data'			: data, 
+            	'year1'			: date1.strftime('%Y'),
+            	'month1'		: date1.strftime('%m'),
+            	'day1'			: date1.strftime('%d'),
+            	'year2'			: date2.strftime('%Y'),
+            	'month2'		: date2.strftime('%m'),
+            	'day2'			: date2.strftime('%d'),
+            	'tz'			: tz,
+            	'format'		: format,
+            	'latlon'		: latlon,
+            	'missing'		: missing,
+            	'trace'			: str(trace),
+            	'direct'		: direct,
+            	'report_type'	: report_type
+            }
 
-        return page
-
-    def _download_data(self, page, file=os.path.join(_dir, 'data', 'scraper.txt')):
-        """
-        Name:
-            _download_data
-        Purpose:
-            Downloads the scraped data from IEM ASOS
-        Inputs:
-            page (Response):
-                The website the data will be downloaded from
-            file (string):
-                The path to the file the downloaded data will be put into
-        Keywords:
-            None
-        Returns:
-            Creates a file with the data in it
-        """
-        with open(file, 'wb') as fd:
-            for chunk in page.iter_content(chunk_size=512):
-                fd.write(chunk)
-
+            page   = requests.get(service, params=payload)
+            info   = page.content.decode().splitlines()
+            head   = info.pop(0).split(',')
+            keys   = ['valid'] + head[offset:]
+            for i in info:
+                tmp  = i.split(',')
+                date = datetime.strptime(tmp[1], '%Y-%m-%d %H:%M')
+                if (date >= date1) and (date <= date2):
+                    if (tmp[0] not in alldata):
+                        alldata[tmp[0]] = {'valid' : []}
+                        for key in keys:
+                            alldata[ tmp[0] ][key] = []
+                    alldata[ tmp[0] ][ 'valid' ].append( date ) 
+                    for j in range( offset, nVars+offset ):
+                        if (tmp[j] == missing): 
+                            alldata[ tmp[0] ][ head[j] ].append( np.nan )                    
+                        else:
+                            alldata[ tmp[0] ][ head[j] ].append( float(tmp[j] ) )
+            for statID in alldata:
+                sortIDs = np.argsort( alldata[statID]['valid'] )
+                for key in alldata[statID]:
+                    if len(alldata[statID][key]) == 0:
+                        alldata[statID][key] = None
+                    else:
+                        alldata[statID][key] = np.array( alldata[statID][key] )
+				        alldata[statID][key] = alldata[statID][key][sortIDs]  
+        return alldata
