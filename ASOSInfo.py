@@ -1,6 +1,7 @@
 import os
 from datetime import datetime
 import requests
+import csv
 
 _dir  = os.path.realpath( os.path.dirname(__file__) )
 _asos = os.path.join( _dir, 'data', 'asos-stations.txt' )
@@ -138,7 +139,7 @@ class ASOSInfo( object ):
                 data.append( info )                                                # Append the dictionary to the data list
         return data                                                                # Return the data list
 
-    def _get_page(self, service='https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?', stations=['AXH', 'DWH', 'EFD', 'HOU', 'IAH', 'LVJ', 'MCJ', 'SGR', 'TME'], data=['tmpc'], year1='2018', month1='1', day1='1', year2='2018', month2='12', day2='31', tz='Etc/UTC', format='onlycomma', latlon='yes', missing='M', trace='T', direct='no', report_type=['1', '2']):
+    def download_data(self, service='https://mesonet.agron.iastate.edu/cgi-bin/request/asos.py?', stations=['AXH', 'DWH', 'EFD', 'HOU', 'IAH', 'LVJ', 'MCJ', 'SGR', 'TME'], data=['tmpc'], year1='2018', month1='1', day1='1', year2='2018', month2='12', day2='31', tz='Etc/UTC', format='onlycomma', latlon='yes', missing='M', trace='T', direct='no', report_type=['1', '2'], file=os.path.join(_dir, 'data', 'scraper.txt')):
         """
         Name: 
             _get_page
@@ -177,6 +178,8 @@ class ASOSInfo( object ):
                 Whether or not the data should be downloaded
             report_type (list):
                 The report types to include
+            file (string):
+                The path to the file the downloaded data will be put into
         Keywords:
             None.
         Returns:
@@ -202,25 +205,45 @@ class ASOSInfo( object ):
 
         page = requests.get(service, params=payload)
 
-        return page
-
-    def _download_data(self, page, file=os.path.join(_dir, 'data', 'scraper.txt')):
-        """
-        Name:
-            _download_data
-        Purpose:
-            Downloads the scraped data from IEM ASOS
-        Inputs:
-            page (Response):
-                The website the data will be downloaded from
-            file (string):
-                The path to the file the downloaded data will be put into
-        Keywords:
-            None
-        Returns:
-            Creates a file with the data in it
-        """
         with open(file, 'wb') as fd:
             for chunk in page.iter_content(chunk_size=512):
                 fd.write(chunk)
 
+    def _parse_page(self, file=os.path.join(_dir, 'data', 'scraper.txt'), lonlat=True):
+        """
+        Name:
+            _parse_page
+        Purpose:
+            Parse the data from the page into the dictionary structure
+        Inputs:
+            file (string):
+                The path to the file the page has been downloaded to
+            lonlat (bool):
+                Whether or not the file includes information about the longitude and latitude of the event
+        Keywords:
+            None.
+        Returns:
+            A dictionary using the data from the file
+        """
+        data = {}
+
+        with open(file, 'r') as f:
+            csvfile = csv.reader(f) # Read as a csv file
+            next(f) # Skip the header
+
+            stations = [] # A list of unique stations
+
+            for line in csvfile:
+                stations.append(line[0]) # Add station to the stations list
+                stations = list(set(stations)) # Get rid of any duplicates in the stations list
+
+                line[1] = datetime.strptime(line[1], '%Y-%m-%d %H:%M') # Convert to a datetime object
+                if lonlat:
+                    line[2] = tuple([float(line[2]), float(line[3])]) # Convert lon and lat to tuple
+                    del line[3] # Get rid of the extra value
+
+                for station in stations:
+                    if line[0] == station:
+                        data.setdefault(station, []).append(line[1:len(line)]) # Append to the list of list of data that came from the station
+
+            return data
