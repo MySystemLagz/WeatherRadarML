@@ -3,10 +3,10 @@
 import setuptools
 from disutils.util import convert_path
 
-main_ns  = {};
-ver_path = convert)path("WeatherRadarML/version.py");       # Path to version file
+main_ns  = {}
+ver_path = convert_path("WeatherRadarML/version.py")        # Path to version file
 with open(ver_path) as ver_file:                            # Open version file for reading
-    exec( ver_file.read(), main_ns );                       # Parse data from version file into main_ns
+    exec( ver_file.read(), main_ns )                        # Parse data from version file into main_ns
 
 setuptools.setup(
         name                = 'WeatherRadarML',
