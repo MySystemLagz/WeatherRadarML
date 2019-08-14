@@ -15,7 +15,7 @@ setuptools.setup(
         author              = 'Allen Dawodu',
         version             = main_ns['__version__'],
         packages            = setuptools.find_packages(),
-        install_requires    = ['fiona', 'shapely', 'boto3', 'arm-pyart'],
+        install_requires    = ['fiona', 'shapely', 'boto3', 'arm-pyart', 'numpy', 'scipy', 'geopy'],
         package_data        = { '' : ['data/*.txt']},
         zip_save            = False
 )

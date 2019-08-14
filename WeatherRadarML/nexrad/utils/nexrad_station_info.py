@@ -1,4 +1,6 @@
-def nexrad_station_info():
+import numpy as np
+
+def nexrad_station_info(convert_lon = True):
     """
         Name:
 		NEXRAD_STATION_INFO
@@ -187,14 +189,19 @@ def nexrad_station_info():
 		'30001966 TJUA 11655 SAN JUAN                       UNITED STATES        PR SAN JUAN                       18.1175   -66.07861  2794   +4     NEXRAD                                           ',
 		'30001961      41417 ANDERSEN AFB AGANA             GUAM                 GU GUAM                           13.45444  144.80833  264    +8     NEXRAD                                           ']
     nlines = len( lines )
-    data   = {  'statid' : [],
-                'lon'    : [],
-                'lat'    : [],
-                'alt'    : []}
-    for line in lines:
-        print
-        data['statid'].append( line[9:13] )
-        data['lon'].append(    (float(line[116:126]) + 360.0) % 360.0 )
-        data['lat'].append(    float(line[106:115]) )
-        data['alt'].append(    float(line[127:133]) / km_to_ft )
+    data   = {  'statid' : np.empty( (nlines,), dtype='<U4' ),
+                'lon'    : np.full(  (nlines,), np.nan, dtype=np.float32 ),
+                'lat'    : np.full(  (nlines,), np.nan, dtype=np.float32 ),
+                'alt'    : np.full(  (nlines,), np.nan, dtype=np.float32 )}
+    for i in range( nlines ):
+        data['statid'][i] = lines[i][9:13]
+        data['lon'][i]    = float(lines[i][116:126])
+        data['lat'][i]    = float(lines[i][106:115])
+        data['alt'][i]    = float(lines[i][127:133])
+
+    if convert_lon:
+        data['lon']  = (data['lon'] + 360.0) % 360.0
+
+    data['alt'] /= km_to_ft
+    
     return data
