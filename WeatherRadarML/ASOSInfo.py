@@ -2,6 +2,8 @@ import os
 from datetime import datetime
 import requests
 import csv
+import json
+from WeatherRadar import WeatherRadar
 
 _dir  = os.path.realpath( os.path.dirname(__file__) )
 _asos = os.path.join( _dir, 'data', 'asos-stations.txt' )
@@ -209,7 +211,7 @@ class ASOSInfo( object ):
             for chunk in page.iter_content(chunk_size=512):
                 fd.write(chunk)
 
-    def _parse_page(self, file=os.path.join(_dir, 'data', 'scraper.txt'), lonlat=True, by_station=True):
+    def _parse_page(self, file=os.path.join(_dir, 'data', 'scraper.txt'), destination=os.path.join(_dir, 'data', 'json.txt')):
         """
         Name:
             _parse_page
@@ -218,40 +220,52 @@ class ASOSInfo( object ):
         Inputs:
             file (string):
                 The path to the file the page has been downloaded to
-            lonlat (bool):
-                Whether or not the file includes information about the longitude and latitude of the event
-            by_station (bool):
-                Whether or not to organize the data by stations or by time
+            destination (string):
+                Where to put the JSON file
         Keywords:
             None.
         Returns:
-            A dictionary using the data from the file
+            A JSON file
         """
-        data = {}
-        
+        stations_dict = []
+
         with open(file, 'r') as f:
-            csvfile = csv.reader(f) # Read as a csv file
-            next(f) # Skip the header
+            # Allow the file to be read
+            csvfile = csv.reader(f)
 
-            info = []
+            # Skip the header
+            next(f)
 
+            # Get unique stations from the csv file
+            stations = []
             for line in csvfile:
-                line[1] = datetime.strptime(line[1], '%Y-%m-%d %H:%M') # Convert to a datetime object
-                if lonlat:
-                    line[2] = tuple([float(line[2]), float(line[3])]) # Convert lon and lat to tuple
-                    del line[3] # Get rid of the extra value
+                stations.append(line[0])
+            stations = list(set(stations))
 
-                if by_station:
-                    info.append(line[0]) # Add station to the stations list
-                else:
-                    info.append(line[1])
+            # Create a dictionary for each station
+            for station in stations:
+                station_name = station
+                stations_dict.append({'station': {'name': station_name, 'coords': []}, 'date': [], 'precip': [], 'temp': []})
 
-                info = list(set(info))
+            # Go back to the top of the file and skip the header
+            f.seek(0)
+            next(f)
 
-                for item in info:
-                    if by_station:
-                        if line[0] == item:
-                            data.setdefault(item, []).append(line[1:len(line)])
-                    else:
-                        if line[1] == item:
-                            data.setdefault(item, []).append(line)
+            # If the station is equivalent, append the information about it
+            for line in csvfile:
+                for station in stations_dict:
+                    if line[0] == station['station']['name']:
+                        station['station']['coords'] = [float(line[2]), float(line[3])]
+                        station['date'].append(line[1])
+                        station['precip'].append(line[4])
+                        station['temp'].append(line[5])
+            
+            # Write to the JSON file
+            with open('/home/allen/Desktop/Code/data.txt', 'w') as f:
+                for station in stations_dict:
+                    f.write(json.dumps(station, indent=4))
+                    f.write('\n')
+
+        # WeatherRadar()
+
+        # download_data()
