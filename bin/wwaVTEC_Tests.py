@@ -1,12 +1,12 @@
-#/usr/bin/env python3
+#!/usr/bin/env python3
 import os
 import fiona
 import matplotlib.pyplot as plt
+import WeatherRadarML
 from WeatherRadarML.wwaVTEC import wwaVTEC
 from WeatherRadarML import plotUtils
 
-fileDir = os.path.dirname( os.path.abspath( __file__ ) )                        # Get absolute path to directory of this file
-dataDir = os.path.join( os.path.dirname(fileDir), 'data' )                      # Set path to data directory
+dataDir = os.path.join( os.path.dirname(WeatherRadarML.__file__), 'data' )                      # Set path to data directory
 shpFile = os.path.join( dataDir, '1986_all', 'wwa_198601010000_198701010000.shp' )# Set path to shape file
 
 if __name__ == "__main__":
