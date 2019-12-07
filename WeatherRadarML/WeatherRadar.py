@@ -120,4 +120,9 @@ if __name__ == "__main__":
     # else:
     #     print('Must input one (1) shapeFile name')
     # WeatherRadar('data/wwa_201901010000_201902010000.shp', count=2000)
-    WeatherRadarPlus('data/wwa_201901010000_201902010000.shp', count=1000)
+    import sys
+    if len(sys.argv) == 2:
+        file = sys.argv[1]
+    else:
+        file = 'data/wwa_201901010000_201902010000.shp'
+    WeatherRadarPlus(file, count=1000)
