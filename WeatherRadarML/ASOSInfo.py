@@ -266,6 +266,25 @@ class ASOSInfo( object ):
                     f.write(json.dumps(station, indent=4))
                     f.write('\n')
 
-        # WeatherRadar()
+    def get_stations(self):
+        """
+        Name:
+            get_stations
+        Purpose:
+            Generate a list of stations and their locations
+        Inputs:
+            None.
+        Keywords:
+            None.
+        Returns:
+            A list of stations and their locations
+        """
+        stations = []
+        locations = []
 
-        # download_data()
+        info = ASOSInfo()._parseData()
+        for item in info:
+            stations.append(item['CALL'])
+            locations.append((float(item['LON']), float(item['LAT'])))
+
+        return stations, locations

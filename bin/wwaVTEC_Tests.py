@@ -12,15 +12,16 @@ def show_warnings(zipfile, start=None, end=None, show_only_stations_inside=False
     # Initialize the map
     ax = utils.baseMap()
 
-    stations = []
-    locations = []
+    # stations = []
+    # locations = []
     inside_station_indexes = []
 
     # Get a list of all available stations and their locations
-    info = ASOSInfo()._parseData()
-    for item in info:
-        stations.append(item['CALL'])
-        locations.append((float(item['LON']), float(item['LAT'])))
+    # info = ASOSInfo()._parseData()
+    # for item in info:
+    #     stations.append(item['CALL'])
+    #     locations.append((float(item['LON']), float(item['LAT'])))
+    stations, locations = ASOSInfo().get_stations()
 
     for record in records:
         # Add the record to the plot
