@@ -1,20 +1,51 @@
 #!/usr/bin/env python3
 import os
-import fiona
-import matplotlib.pyplot as plt
-import WeatherRadarML
-from WeatherRadarML.wwaVTEC import wwaVTEC
-from WeatherRadarML import plotUtils
+from WeatherRadarML import plotUtils as utils
+from WeatherRadarML.readWarnings import read_warnings
+from WeatherRadarML.ASOSInfo import ASOSInfo
+from datetime import datetime
+from shapely.geometry import Polygon, Point, shape
 
-dataDir = os.path.join( os.path.dirname(WeatherRadarML.__file__), 'data' )                      # Set path to data directory
-shpFile = os.path.join( dataDir, '1986_all', 'wwa_198601010000_198701010000.shp' )# Set path to shape file
+def show_warnings(zipfile, start=None, end=None, show_only_stations_inside=False):
+    # Get the warning areas
+    records = read_warnings(zipfile, start, end)
+    # Initialize the map
+    ax = utils.baseMap()
 
-if __name__ == "__main__":
-    ax   = plotUtils.baseMap(extent = (-100, -92, 27, 36,) )                    # Create basemap
+    stations = []
+    locations = []
+    inside_station_indexes = []
 
-    i = 0                                                                       # Simple counter
-    for record in fiona.open(shpFile):                                          # Open shape file and iterate over all records
-        wwaVTEC(record).plot( ax )                                              # CReate wwaVTEC instance using record and plot on the map
-        i += 1                                                                  # Increment i
-        if i > 100: break                                                       # If i is > 100, then break loop
-    plt.show()                                                                  # Show the plot
+    # Get a list of all available stations and their locations
+    info = ASOSInfo()._parseData()
+    for item in info:
+        stations.append(item['CALL'])
+        locations.append((float(item['LON']), float(item['LAT'])))
+
+    for record in records:
+        # Add the record to the plot
+        record.plot(ax)
+        # Get only the indexes of the stations inside the warnings
+        if show_only_stations_inside:
+            for index in range(len(stations)):
+                station_location = Point(locations[index])
+                if station_location.within(record):
+                    inside_station_indexes.append(index)
+
+    if show_only_stations_inside:
+        # Remove dulplicates in inside_station_indexes
+        inside_station_indexes = list(set(inside_station_indexes))
+        for index in inside_station_indexes:
+            # Plot stations
+            utils.plotStation(ax, stations[index], locations[index], color='r')
+    
+    # Plot stations
+    if not show_only_stations_inside:
+        for index in range(len(stations)):
+            utils.plotStation(ax, stations[index], locations[index], color='r')
+    
+    # Show plot to user
+    utils.plt.show()
+
+if __name__ == "__main__":  
+    show_warnings('/home/allen/Downloads/1986_all.zip', start=datetime(1986, 1, 1), end=datetime(1986, 3, 1), show_only_stations_inside=True)

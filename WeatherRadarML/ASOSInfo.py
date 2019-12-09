@@ -3,7 +3,7 @@ from datetime import datetime
 import requests
 import csv
 import json
-from WeatherRadar import WeatherRadar
+# from WeatherRadar import WeatherRadar
 
 _dir  = os.path.realpath( os.path.dirname(__file__) )
 _asos = os.path.join( _dir, 'data', 'asos-stations.txt' )
@@ -102,7 +102,7 @@ class ASOSInfo( object ):
         offset   = 0                                                               # Offset for extracting information from the line
         for i in range( len(self._colWid) ):                                       # Iterate over all columns i.e, the number of elements in the colWidth list
             info = line[ offset:offset+self._colWid[i] ].strip()                   # Extract information from the line start at character `offset` and end with character `offset+colWidth[i]`, .strip() removes spaces at beginning/end of string
-            if (self._keys is not None) and (self._keys[i] == 'BEGDT'):
+            if (self._keys is not None) and (self._keys[i] == 'BEGDT') and (info != 'BEGDT'):
                 info = datetime.strptime(info, '%Y%m%d')
             elif info.isdigit():                                                   # If the string is all digits (does not include decimals
                 info = int(info)                                                   # Convert info to integer

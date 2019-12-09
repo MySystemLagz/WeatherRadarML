@@ -21,6 +21,7 @@ def baseMap( linewidth  = 0.5,
     '''
     ax = plt.axes( projection= getattr(ccrs, projection)() )
     ax.set_extent( extent )
+    ax.stock_img()
     ax.coastlines(linewidth = linewidth, resolution = resolution)
     ax.add_feature( cfeature.STATES.with_scale(resolution), linewidth=linewidth)
     return ax
