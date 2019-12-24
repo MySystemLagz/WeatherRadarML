@@ -6,47 +6,66 @@ from WeatherRadarML.ASOSInfo import ASOSInfo
 from datetime import datetime
 from shapely.geometry import Polygon, Point, shape
 
-def show_warnings(zipfile, start=None, end=None, show_only_stations_inside=False):
+def show_warnings(zipfile, start=None, end=None, show_only_stations_inside=True):
+    '''
+    Name:
+        show_warnings
+    Purpose:
+        Display warnings and stations
+    Inputs:
+        zipfile (string):
+    Keywords:
+        None.
+    Outputs:
+    '''
     # Get the warning areas
     records = read_warnings(zipfile, start, end)
     # Initialize the map
     ax = utils.baseMap()
 
-    # stations = []
-    # locations = []
-    inside_station_indexes = []
-
-    # Get a list of all available stations and their locations
-    # info = ASOSInfo()._parseData()
-    # for item in info:
-    #     stations.append(item['CALL'])
-    #     locations.append((float(item['LON']), float(item['LAT'])))
+    # Get the stations and their locations
     stations, locations = ASOSInfo().get_stations()
 
     for record in records:
-        # Add the record to the plot
+        # Plot the warning
         record.plot(ax)
-        # Get only the indexes of the stations inside the warnings
-        if show_only_stations_inside:
-            for index in range(len(stations)):
-                station_location = Point(locations[index])
+        for location in locations:
+            if show_only_stations_inside:
+                # Convert location to a Point object
+                station_location = Point(location)
+                # Check if the station is within the bounds of the warning
                 if station_location.within(record):
-                    inside_station_indexes.append(index)
-
-    if show_only_stations_inside:
-        # Remove dulplicates in inside_station_indexes
-        inside_station_indexes = list(set(inside_station_indexes))
-        for index in inside_station_indexes:
-            # Plot stations
-            utils.plotStation(ax, stations[index], locations[index], color='r')
+                    # Plot the station
+                    utils.plotStation(ax, stations[locations.index(location)], location, color='r')
+            else:
+                # Break the loop if show_only_stations_inside is False
+                break
     
-    # Plot stations
+    # Plot all stations if show_only_stations_inside is False
     if not show_only_stations_inside:
-        for index in range(len(stations)):
-            utils.plotStation(ax, stations[index], locations[index], color='r')
+        for location in locations:
+            utils.plotStation(ax, stations[locations.index(location)], location, color='r')
     
     # Show plot to user
     utils.plt.show()
 
+def show_stations_by_state(state):
+    ax = utils.baseMap()
+
+    stations = []
+    locations = []
+
+    info = ASOSInfo()._parseData()
+    for item in info:
+        if item['ST'] == state:
+            stations.append(item['CALL'])
+            locations.append((float(item['LON']), float(item['LAT'])))
+
+    for location in locations:
+            utils.plotStation(ax, stations[locations.index(location)], location, color='r')
+
+    utils.plt.show()
+
 if __name__ == "__main__":  
     show_warnings('/home/allen/Downloads/1986_all.zip', start=datetime(1986, 1, 1), end=datetime(1986, 3, 1), show_only_stations_inside=True)
+    # show_stations_by_state('TX')

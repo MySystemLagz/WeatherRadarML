@@ -19,6 +19,7 @@ def baseMap( linewidth  = 0.5,
     Outputs:
         Returns a matplotlib axes object
     '''
+    plt.figure(figsize=(20, 20))
     ax = plt.axes( projection= getattr(ccrs, projection)() )
     ax.set_extent( extent )
     ax.stock_img()
@@ -39,8 +40,8 @@ def plotStation( ax, name, coords, color = 'g' ):
     Outputs:
         None.
     '''
-    ax.scatter( *coords, color = color )
-    ax.annotate( name, coords )
+    ax.scatter( *coords, color = color, zorder = 2 )
+    ax.annotate( name, coords, zorder = 3 )
 
 def plotWarning( ax, record ):
     xy = np.asarray( record['geometry']['coordinates'] ).squeeze()
