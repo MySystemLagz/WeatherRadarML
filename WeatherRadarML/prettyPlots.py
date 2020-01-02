@@ -1,4 +1,4 @@
-from WeatherRadarML.ASOSInfo import ASOSInfo
+from WeatherRadarML.nexrad.utils.nexrad_station_info import nexrad_station_info
 from WeatherRadarML import plotUtils as utils
 import numpy as np
 import matplotlib.pyplot as plt
@@ -17,18 +17,17 @@ def radar_range(station, kmrange=300.0):
         Displays the plot to the user
     '''
     # Get stations
-    stations, locations = ASOSInfo().get_stations()
-
-    location = (0, 0)
+    nexradInfo = nexrad_station_info()
 
     # Get specific station
-    for index in range(len(stations)):
-        if stations[index] == station:
-            location = locations[index]
+    lon = lat = None
+    for index in range(nexradInfo['statid'].size):
+        if nexradInfo['statid'][index] == station:
+            lon = nexradInfo['lon'][index]
+            lat = nexradInfo['lat'][index]
 
-    # Get the longitude and latitude of the station
-    lon = location[0]
-    lat = location[1]
+    if not lon:                                                                 # If longitude is None
+        raise Exception('Station: {} NOT found in list of NEXRAD stations!'.format(station) )# Raise exception
 
     # Create a circle
     xx, yy, zz = antenna_to_cartesian(kmrange, np.arange(360), 0)
@@ -43,4 +42,4 @@ def radar_range(station, kmrange=300.0):
     
 
 if __name__ == "__main__":
-    radar_range('HOU', 300)
+    radar_range('KHGX', 300)

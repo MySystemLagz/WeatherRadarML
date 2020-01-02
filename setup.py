@@ -16,7 +16,7 @@ setuptools.setup(
         version             = main_ns['__version__'],
         packages            = setuptools.find_packages(),
         install_requires    = [ 'fiona',     'shapely', 'boto3', 
-                                'arm-pyart', 'numpy',   'scipy', 
+                                'arm-pyart', 'numpy',   'scipy', 'xarray',  
                                 'geopy',     'matplotlib', 'cartopy'],
         package_data        = { '' : ['data/*.txt']},
         zip_save            = False
