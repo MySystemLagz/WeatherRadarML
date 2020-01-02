@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import setuptools
-from disutils.util import convert_path
+from distutils.util import convert_path
 
 main_ns  = {}
 ver_path = convert_path("WeatherRadarML/version.py")        # Path to version file
