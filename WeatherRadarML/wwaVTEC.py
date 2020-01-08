@@ -29,6 +29,8 @@ class wwaVTEC( MultiPolygon ):
                     setattr(self, key, table[val])                              # Set class attribute with name key to value from vtec table
                 else:                                                           # Else
                     setattr(self, key, val)                                     # Set class attribute with name key to value val
+        
+        self._record = record
 
     @property
     def xy(self):
@@ -70,8 +72,12 @@ class wwaVTEC( MultiPolygon ):
         if ('linewidth' not in kwargs):                                         # If linewidth not in kwargs
             kwargs['linewidth'] = 2                                             # Add to kwargs with value of 2
 
-        if ('edgecolor' not in kwargs):                                         # If edgecolor not in kwargs
-            kwargs['edgecolor'] = to_rgba( self.PHENOM['color'] )               # Set edgecolor to RGBA of phenomenon color
+        if ('edgecolor' not in kwargs):
+            try:
+                kwargs['edgecolor'] = to_rgba( self.PHENOM['color'] )
+            except ValueError:
+                kwargs['edgecolor'] = to_rgba( 'purple' )                                         # If edgecolor not in kwargs
+                           # Set edgecolor to RGBA of phenomenon color
         elif isinstance(kwargs['edgecolor'], str):                              # Else, if the edgecolor value is type string, then convert to RGBA
             kwargs['edgecolor'] = to_rgba( kwargs['edgecolor'] )                # Convert edgecolor to RGBA
         

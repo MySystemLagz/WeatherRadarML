@@ -23,7 +23,7 @@ def nexrad_station_info(convert_lon = True):
 							IDL vm scripts for real-time processing.
     """
 
-    km_to_ft = 3280.84; #Set conversion factor for elevation
+    km_to_ft = 3280.84 #Set conversion factor for elevation
     infoFile = os.path.join( dataDir, 'nexrad-stations.txt' )
     with open( infoFile, 'r' ) as fid:
         lines = [line.rstrip() for line in fid.readlines()]                     # Read in all lines, stripping off cariage return from each line

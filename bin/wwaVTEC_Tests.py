@@ -34,7 +34,7 @@ def show_warnings(zipfile, start=None, end=None, show_only_stations_inside=True)
                 # Convert location to a Point object
                 station_location = Point(location)
                 # Check if the station is within the bounds of the warning
-                if station_location.within(record):
+                if record.is_valid and station_location.within(record):
                     # Plot the station
                     utils.plotStation(ax, stations[locations.index(location)], location, color='r')
             else:
@@ -67,5 +67,6 @@ def show_stations_by_state(state):
     utils.plt.show()
 
 if __name__ == "__main__":  
-    show_warnings('/home/allen/Downloads/1986_all.zip', start=datetime(1986, 1, 1), end=datetime(1986, 3, 1), show_only_stations_inside=True)
+    # show_warnings('/home/allen/Downloads/2017_all.zip', start=datetime(2017, 8, 25), end=datetime(2017, 8, 29), show_only_stations_inside=True)
+    show_warnings('WeatherRadarML/data/Pickles/2017082800-2017082803.pic', show_only_stations_inside=True)
     # show_stations_by_state('TX')
